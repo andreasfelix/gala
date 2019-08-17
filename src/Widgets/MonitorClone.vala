@@ -34,7 +34,7 @@ namespace Gala
 		public Screen screen { get; construct; }
 		public int monitor { get; construct; }
 
-		WindowCloneContainer window_container;
+		public WindowCloneContainer window_container;
 		BackgroundManager background;
 
 		public MonitorClone (Screen screen, int monitor)

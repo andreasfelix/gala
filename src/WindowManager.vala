@@ -1525,12 +1525,15 @@ namespace Gala
 
 		void on_wmt_open (Window window, int x, int y)
 		{
+			debug ("on_wmt_open, x %d, y %d", x, y);
+			debug ("workspace index: %d", window.get_workspace ().index ());
 			unowned Meta.Display display = get_screen ().get_display ();
 			display.end_grab_op (display.get_current_time ());
 
 			workspace_view.open (null);
 
 			Idle.add (() => {
+				debug ("IDLE STart");
 				((MultitaskingView)workspace_view).start_drag_window (window, x, y);
 				window_movement_tracker.restore_window_state ();
 				return false;
