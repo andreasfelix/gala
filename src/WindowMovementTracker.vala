@@ -100,10 +100,33 @@ namespace Gala
 
 			Meta.Rectangle wa = window.get_work_area_for_monitor (screen.get_current_monitor ());
 
-			if (y - wa.y > (float)wa.height * TRIGGER_RATIO) {
+			if (y - wa.y > wa.height * TRIGGER_RATIO && !has_monitor_below (window)) {
 				window.position_changed.disconnect (on_position_changed);
 				open (window, x, y);
 			}
+		}
+
+		bool has_monitor_below (Meta.Window window) {
+			unowned Meta.Screen screen = window.get_screen ();
+			var n_monitors = screen.get_n_monitors ();
+			var current_monitor = screen.get_current_monitor ();
+			var current_rect = window.get_work_area_for_monitor (current_monitor);
+			var current_end_x = current_rect.x + current_rect.width - 1;
+			var current_end_y = current_rect.y + current_rect.height - 1;
+			for (int i = 0; i < n_monitors; i++) {
+				if (i == current_monitor) {
+					continue;
+				}
+
+				var other_rect = window.get_work_area_for_monitor (i);
+				if (current_end_y < other_rect.y) {
+						if (current_rect.x <= other_rect.x + other_rect.width - 1 && current_end_x >= other_rect.x) {
+								return true;
+						}
+				}
+			}
+
+			return false;
 		}
 	}
 }
