@@ -98,10 +98,9 @@ namespace Gala
 			Clutter.ModifierType type;
 			ct.get_pointer (out x, out y, out type);
 
-			int height;
-			screen.get_size (null, out height);
+			Meta.Rectangle wa = window.get_work_area_for_monitor (screen.get_current_monitor ());
 
-			if (y > (float)height * TRIGGER_RATIO) {
+			if (y - wa.y > (float)wa.height * TRIGGER_RATIO) {
 				window.position_changed.disconnect (on_position_changed);
 				open (window, x, y);
 			}
