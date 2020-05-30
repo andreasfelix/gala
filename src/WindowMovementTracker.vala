@@ -1,5 +1,6 @@
 //
 //  Copyright (C) 2019 Adam Bieńkowski
+//                2020 Felix Andreas
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,10 +24,6 @@ namespace Gala {
         public AreaTiling area_tiling { get; construct; }
         private Meta.Window? current_window;
 
-        private float start_x;
-        private float start_y;
-        private Meta.MaximizeFlags maximize_flags;
-
         public WindowMovementTracker (Meta.Display display, AreaTiling area_tiling) {
             Object (display: display, area_tiling: area_tiling);
         }
@@ -45,20 +42,6 @@ namespace Gala {
             }
         }
 
-        public void restore_window_state () {
-            var actor = (Meta.WindowActor)current_window.get_compositor_private ();
-            current_window.move_frame (false, (int)start_x, (int)start_y);
-            if (maximize_flags != 0) {
-                current_window.maximize (maximize_flags);
-
-                /**
-                 * kill_window_effects does not reset the translation
-                 * and that's the only thing we want to do
-                 */
-                actor.set_translation (0.0f, 0.0f, 0.0f);
-            }
-        }
-
         private void on_grab_op_begin (Meta.Display display, Meta.Window? window, Meta.GrabOp op) {
             if (window == null) {
                 return;
@@ -66,11 +49,6 @@ namespace Gala {
 
             current_window = window;
             current_window.position_changed.connect (on_position_changed);
-
-            var actor = (Meta.WindowActor)window.get_compositor_private ();
-            start_x = actor.x;
-            start_y = actor.y;
-            maximize_flags = window.get_maximized ();
         }
 
         private void on_grab_op_end (Meta.Display display, Meta.Window? window, Meta.GrabOp op) {
