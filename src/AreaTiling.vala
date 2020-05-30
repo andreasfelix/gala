@@ -21,12 +21,13 @@
 public class Gala.AreaTiling : Object {
     int animation_duration = 250;
     public WindowManager wm { get; construct; }
+    public weak Meta.Display display { get; construct; }
     private Meta.Window window;
     private Clutter.Actor window_icon;
     public bool is_shrinked = false;
 
-    public AreaTiling (WindowManager wm) {
-        Object (wm : wm);
+    public AreaTiling (WindowManager wm, Meta.Display display) {
+        Object (wm : wm, display : display);
     }
 
     public void tile(int x, int y) {
@@ -44,11 +45,11 @@ public class Gala.AreaTiling : Object {
         }
 
         Meta.Rectangle tile_rect = calculate_tile_rect (x, y);
-        wm.show_tile_preview (window, tile_rect, window.get_screen ().get_current_monitor ());
+        wm.show_tile_preview (window, tile_rect, display.get_current_monitor ());
     }
 
     private Meta.Rectangle calculate_tile_rect(int x, int y) {
-        Meta.Rectangle wa = window.get_work_area_for_monitor (window.get_screen ().get_current_monitor ());
+        Meta.Rectangle wa = window.get_work_area_for_monitor (display.get_current_monitor ());
 
         int monitor_width = wa.width, monitor_height = wa.height;
         int monitor_x = x - wa.x, monitor_y = y - wa.y;
@@ -83,8 +84,6 @@ public class Gala.AreaTiling : Object {
         var actor = (Meta.WindowActor)window.get_compositor_private ();
         actor.get_transformed_position (out abs_x, out abs_y);
 
-        int width, height;
-        window.get_screen ().get_size (out width, out height);
         actor.set_pivot_point ((x - abs_x) / actor.width, (y - abs_y) / actor.height);
         actor.save_easing_state ();
         actor.set_easing_mode (Clutter.AnimationMode.EASE_IN_EXPO);
@@ -106,8 +105,6 @@ public class Gala.AreaTiling : Object {
         is_shrinked = false;
         var actor = (Meta.WindowActor)window.get_compositor_private ();
 
-        int width, height;
-        window.get_screen ().get_size (out width, out height);
         actor.set_pivot_point (0.5f, 1.0f);
         actor.set_scale (0.01f, 0.1f);
         actor.opacity = 0U;

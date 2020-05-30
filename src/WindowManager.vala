@@ -164,7 +164,7 @@ namespace Gala {
 #endif
             KeyboardManager.init (display);
 
-            area_tiling = new AreaTiling (this);
+            area_tiling = new AreaTiling (this, display);
             window_movement_tracker = new WindowMovementTracker (display, area_tiling);
             window_movement_tracker.watch ();
 

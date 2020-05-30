@@ -63,7 +63,7 @@ namespace Gala {
             }
         }
 
-        private void on_grab_op_begin (Meta.Screen screen, Meta.Window? window, Meta.GrabOp op) {
+        private void on_grab_op_begin (Meta.Display display, Meta.Window? window, Meta.GrabOp op) {
             if (window == null) {
                 return;
             }
@@ -78,10 +78,10 @@ namespace Gala {
             current_window.position_changed.connect (on_position_changed);
         }
 
-        private void on_grab_op_end (Meta.Screen screen, Meta.Window? window, Meta.GrabOp op) {
+        private void on_grab_op_end (Meta.Display display, Meta.Window? window, Meta.GrabOp op) {
             if (!hide_tile_preview_when_window_moves) {
                 hide_tile_preview_when_window_moves = true;
-                unowned Meta.CursorTracker ct = screen.get_cursor_tracker ();
+                unowned Meta.CursorTracker ct = display.get_cursor_tracker ();
                 int x, y;
                 Clutter.ModifierType type;
                 ct.get_pointer (out x, out y, out type);
@@ -95,8 +95,7 @@ namespace Gala {
         }
 
         private void on_position_changed (Meta.Window window) {
-            unowned Meta.Screen screen = window.get_screen ();
-            unowned Meta.CursorTracker ct = screen.get_cursor_tracker ();
+            unowned Meta.CursorTracker ct = display.get_cursor_tracker ();
             int x, y;
             Clutter.ModifierType type;
             ct.get_pointer (out x, out y, out type);
