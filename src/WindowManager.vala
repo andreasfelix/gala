@@ -1094,7 +1094,7 @@ namespace Gala {
         }
 
         public override void hide_tile_preview () {
-            if (tile_preview != null) {
+            if (tile_preview != null && !area_tiling.is_active) {
                 tile_preview.remove_all_transitions ();
                 tile_preview.opacity = 0U;
                 tile_preview.hide ();

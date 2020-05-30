@@ -20,20 +20,16 @@ using Meta;
 namespace Gala {
     public class WindowMovementTracker : Object {
         public weak Meta.Display display { get; construct; }
-        public weak AreaTiling area_tiling { get; construct; }
-        public bool hide_tile_preview_when_window_moves = true;
+        public AreaTiling area_tiling { get; construct; }
         private Meta.Window? current_window;
 
-        Clutter.Actor window_icon;
         private float start_x;
         private float start_y;
-        private bool is_shrinked = false;
         private Meta.MaximizeFlags maximize_flags;
 
         public WindowMovementTracker (Meta.Display display, AreaTiling area_tiling) {
             Object (display: display, area_tiling: area_tiling);
         }
-
 
         public void watch () {
             display.grab_op_begin.connect (on_grab_op_begin);
@@ -69,29 +65,24 @@ namespace Gala {
             }
 
             current_window = window;
+            current_window.position_changed.connect (on_position_changed);
 
             var actor = (Meta.WindowActor)window.get_compositor_private ();
             start_x = actor.x;
             start_y = actor.y;
             maximize_flags = window.get_maximized ();
-
-            current_window.position_changed.connect (on_position_changed);
         }
 
         private void on_grab_op_end (Meta.Display display, Meta.Window? window, Meta.GrabOp op) {
-            if (!hide_tile_preview_when_window_moves) {
-                hide_tile_preview_when_window_moves = true;
+            current_window.position_changed.disconnect (on_position_changed);
+            if (area_tiling.is_active) {
                 unowned Meta.CursorTracker ct = display.get_cursor_tracker ();
                 int x, y;
                 Clutter.ModifierType type;
                 ct.get_pointer (out x, out y, out type);
-                area_tiling.tile (x, y);
+                area_tiling.tile (window, x, y);
+                area_tiling.hide_preview (window);
             }
-
-            if (area_tiling.is_shrinked) {
-                area_tiling.unshrink_window (window);
-            }
-            current_window.position_changed.disconnect (on_position_changed);
         }
 
         private void on_position_changed (Meta.Window window) {
@@ -101,15 +92,10 @@ namespace Gala {
             ct.get_pointer (out x, out y, out type);
 
             if ((type & Gdk.ModifierType.CONTROL_MASK) != 0) {
-                area_tiling.preview (x, y);
-                return;
+                area_tiling.show_preview (window, x, y);
+            } else if (area_tiling.is_active) {
+                area_tiling.hide_preview (window);
             }
-
-            if (area_tiling.is_shrinked) {
-                area_tiling.unshrink_window(window);
-            }
-
-            hide_tile_preview_when_window_moves = true;
         }
     }
 }

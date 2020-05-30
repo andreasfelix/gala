@@ -19,37 +19,48 @@
 */
 
 public class Gala.AreaTiling : Object {
-    int animation_duration = 250;
     public WindowManager wm { get; construct; }
     public weak Meta.Display display { get; construct; }
-    private Meta.Window window;
     private Clutter.Actor window_icon;
-    public bool is_shrinked = false;
+    public bool is_active = false;
+    int animation_duration = 250;
+    private int grid_x = 2;
+    private int grid_y = 2;
 
     public AreaTiling (WindowManager wm, Meta.Display display) {
         Object (wm : wm, display : display);
     }
 
-    public void tile(int x, int y) {
-        debug("Tile!");
-        Meta.Rectangle tile_rect = calculate_tile_rect (x, y);
+    public void tile(Meta.Window window, int x, int y) {
+        Meta.Rectangle tile_rect;
+        calculate_tile_rect (out tile_rect, window, x, y);
         window.move_resize_frame (true, tile_rect.x, tile_rect.y, tile_rect.width, tile_rect.height);
         wm.hide_tile_preview ();
     }
 
-    public void preview(int x, int y) {
-        if (!is_shrinked){
-            shrink_window (window, (float) x, (float) y);
-        } else {
+    public void show_preview(Meta.Window window, int x, int y) {
+        if (is_active){
             window_icon.set_position((float) x - 48.0f, (float) y - 48.0f);
+        } else {
+            shrink_window (window, (float) x, (float) y);
         }
 
-        Meta.Rectangle tile_rect = calculate_tile_rect (x, y);
+        is_active = true;
+        Meta.Rectangle tile_rect;
+        calculate_tile_rect (out tile_rect, window, x, y);
         wm.show_tile_preview (window, tile_rect, display.get_current_monitor ());
     }
 
-    private Meta.Rectangle calculate_tile_rect(int x, int y) {
-        Meta.Rectangle wa = window.get_work_area_for_monitor (display.get_current_monitor ());
+    public void hide_preview (Meta.Window window) {
+        if (is_active) {
+            is_active = false;
+            unshrink_window (window);
+            wm.hide_tile_preview ();
+        }
+    }
+
+    private void calculate_tile_rect(out Meta.Rectangle rect, Meta.Window window, int x, int y) {
+        Meta.Rectangle wa = display.get_monitor_geometry (display.get_current_monitor ());
 
         int monitor_width = wa.width, monitor_height = wa.height;
         int monitor_x = x - wa.x, monitor_y = y - wa.y;
@@ -74,12 +85,10 @@ public class Gala.AreaTiling : Object {
             new_y += monitor_height / 2;
         }
 
-        return {new_x, new_y, new_width, new_height};
+        rect = {new_x, new_y, new_width, new_height};
     }
 
     public void shrink_window (Meta.Window? window, float x, float y) {
-        debug("shrink window!");
-        is_shrinked = true;
         float abs_x, abs_y;
         var actor = (Meta.WindowActor)window.get_compositor_private ();
         actor.get_transformed_position (out abs_x, out abs_y);
@@ -101,8 +110,6 @@ public class Gala.AreaTiling : Object {
     }
 
     public void unshrink_window (Meta.Window? window) {
-        debug("unshrink window!");
-        is_shrinked = false;
         var actor = (Meta.WindowActor)window.get_compositor_private ();
 
         actor.set_pivot_point (0.5f, 1.0f);
