@@ -42,10 +42,10 @@ public class Gala.AreaTiling : Object {
         if (is_active){
             window_icon.set_position((float) x - 48.0f, (float) y - 48.0f);
         } else {
+            is_active = true;
             shrink_window (window, (float) x, (float) y);
         }
 
-        is_active = true;
         Meta.Rectangle tile_rect;
         calculate_tile_rect (out tile_rect, window, x, y);
         wm.show_tile_preview (window, tile_rect, display.get_current_monitor ());
@@ -60,39 +60,25 @@ public class Gala.AreaTiling : Object {
     }
 
     private void calculate_tile_rect(out Meta.Rectangle rect, Meta.Window window, int x, int y) {
-        Meta.Rectangle wa = display.get_monitor_geometry (display.get_current_monitor ());
-
+        Meta.Rectangle wa = window.get_work_area_for_monitor (display.get_current_monitor ());
         int monitor_width = wa.width, monitor_height = wa.height;
         int monitor_x = x - wa.x, monitor_y = y - wa.y;
-        int new_width, new_height;
-        int new_x = wa.x, new_y = wa.y;
-
-        if (monitor_x < (float) monitor_width * 2 / 5) {
-            new_width = monitor_width / 2;
-        } else if (monitor_x < (float) monitor_width * 3 / 5) {
-            new_width = monitor_width;
-        } else {
-            new_width = monitor_width / 2;
-            new_x += monitor_width / 2;
-        }
-
-        if (monitor_y < (float) monitor_height * 2 / 5) {
-            new_height = monitor_height / 2;
-        } else if (monitor_y < (float) monitor_height * 3 / 5) {
-            new_height = monitor_height;
-        } else {
-            new_height = monitor_height / 2;
-            new_y += monitor_height / 2;
-        }
-
-        rect = {new_x, new_y, new_width, new_height};
+        int n_cols = 3 * grid_x - 1;
+        int n_rows = 3 * grid_y - 1;
+        int col = (int)((n_cols * monitor_x / monitor_width) / 1.5);
+        int row = (int)((n_rows * monitor_y / monitor_height) / 1.5);
+        rect = {
+            wa.x + col / 2 * monitor_width / grid_x,
+            wa.y + row / 2 * monitor_height / grid_y,
+            (1 + col % 2) * monitor_width / grid_x,
+            (1 + row % 2) * monitor_height / grid_y,
+        };
     }
 
     public void shrink_window (Meta.Window? window, float x, float y) {
         float abs_x, abs_y;
         var actor = (Meta.WindowActor)window.get_compositor_private ();
         actor.get_transformed_position (out abs_x, out abs_y);
-
         actor.set_pivot_point ((x - abs_x) / actor.width, (y - abs_y) / actor.height);
         actor.save_easing_state ();
         actor.set_easing_mode (Clutter.AnimationMode.EASE_IN_EXPO);
@@ -111,11 +97,9 @@ public class Gala.AreaTiling : Object {
 
     public void unshrink_window (Meta.Window? window) {
         var actor = (Meta.WindowActor)window.get_compositor_private ();
-
         actor.set_pivot_point (0.5f, 1.0f);
         actor.set_scale (0.01f, 0.1f);
         actor.opacity = 0U;
-
         actor.save_easing_state ();
         actor.set_easing_mode (Clutter.AnimationMode.EASE_OUT_EXPO);
         actor.set_easing_duration (animation_duration);
