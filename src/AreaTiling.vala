@@ -23,12 +23,17 @@ public class Gala.AreaTiling : Object {
     public weak Meta.Display display { get; construct; }
     private Clutter.Actor window_icon;
     public bool is_active = false;
+    public bool auto_tiling = false;
     int animation_duration = 250;
-    private int grid_x = 2;
-    private int grid_y = 2;
+    public int grid_x { get; set; default = 2; }
+    public int grid_y { get; set; default = 2; }
 
     public AreaTiling (WindowManager wm, Meta.Display display) {
         Object (wm : wm, display : display);
+    }
+
+    public void toggle_auto_tiling () {
+        auto_tiling = !auto_tiling;
     }
 
     public void tile (Meta.Window window, int x, int y) {

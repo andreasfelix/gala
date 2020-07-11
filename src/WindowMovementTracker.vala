@@ -62,7 +62,7 @@ namespace Gala {
             Clutter.ModifierType type;
             ct.get_pointer (out x, out y, out type);
 
-            if ((type & Gdk.ModifierType.CONTROL_MASK) != 0) {
+            if (area_tiling.auto_tiling ^ ((type & Gdk.ModifierType.CONTROL_MASK) != 0)) {
                 area_tiling.show_preview (window, x, y);
             } else if (area_tiling.is_active) {
                 area_tiling.hide_preview (window);

@@ -1003,6 +1003,25 @@ namespace Gala {
 #endif
                     workspace.activate (display.get_current_time ());
                     break;
+                case ActionType.TOGGLE_AUTO_TILING:
+                    area_tiling.toggle_auto_tiling ();
+                    break;
+                case ActionType.SET_AREA_TILING_GRID22:
+                    area_tiling.grid_x = 2;
+                    area_tiling.grid_y = 2;
+                    break;
+                case ActionType.SET_AREA_TILING_GRID32:
+                    area_tiling.grid_x = 3;
+                    area_tiling.grid_y = 2;
+                    break;
+                case ActionType.SET_AREA_TILING_GRID42:
+                    area_tiling.grid_x = 4;
+                    area_tiling.grid_y = 2;
+                    break;
+                case ActionType.SET_AREA_TILING_GRID44:
+                    area_tiling.grid_x = 4;
+                    area_tiling.grid_y = 4;
+                    break;
                 default:
                     warning ("Trying to run unknown action");
                     break;
