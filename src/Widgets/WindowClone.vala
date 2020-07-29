@@ -119,6 +119,7 @@ namespace Gala {
         Actor close_button;
         Actor active_shape;
         Actor window_icon;
+        Clutter.Text window_title;
 
         public WindowClone (Meta.Window window, bool overview_mode = false) {
             Object (window: window, overview_mode: overview_mode);
@@ -168,8 +169,16 @@ namespace Gala {
             window_icon.set_easing_duration (MultitaskingView.ANIMATION_DURATION);
             window_icon.set_easing_mode (MultitaskingView.ANIMATION_MODE);
             window_icon.set_position (
-                (window_frame_rect.width - WINDOW_ICON_SIZE) / 2,
-                window_frame_rect.height - (WINDOW_ICON_SIZE * scale_factor) * 0.75f);
+                window_frame_rect.width / 2 - WINDOW_ICON_SIZE * scale_factor,
+                window_frame_rect.height / 2 - WINDOW_ICON_SIZE * scale_factor);
+
+            window_title = new Clutter.Text.full(
+                    @"Inter $(16*scale_factor)px",
+                    window.title,
+                    { 255, 255, 255, 255 });
+
+            window_title.set_line_alignment (Pango.Alignment.CENTER);
+            window_title.background_color = { 0, 0, 0, 255 };
 
             active_shape = new Clutter.Actor ();
             active_shape.background_color = { 255, 255, 255, 200 };
@@ -177,6 +186,7 @@ namespace Gala {
 
             add_child (active_shape);
             add_child (window_icon);
+            add_child (window_title);
             add_child (close_button);
 
             load_clone ();
@@ -224,6 +234,7 @@ namespace Gala {
             set_child_below_sibling (active_shape, clone);
             set_child_above_sibling (close_button, clone);
             set_child_above_sibling (window_icon, clone);
+            set_child_above_sibling (window_title, clone);
 
             transition_to_original_state (false);
 
@@ -329,7 +340,14 @@ namespace Gala {
             set_position (rect.x, rect.y);
 
             window_icon.opacity = 255;
-            window_icon.set_position ((rect.width - WINDOW_ICON_SIZE) / 2, rect.height - (WINDOW_ICON_SIZE * scale_factor) * 0.75f);
+            window_title.opacity = 255;
+            window_icon.set_position (
+                (rect.width - WINDOW_ICON_SIZE * scale_factor) / 2,
+                -(WINDOW_ICON_SIZE * scale_factor) / 2);
+            window_title.pivot_point = {0.5f, 0.5f};
+            window_title.set_position (
+                (rect.width - window_title.width) / 2,
+                rect.height);
 
             restore_easing_state ();
 
